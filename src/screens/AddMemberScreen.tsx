@@ -10,9 +10,15 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../context/AppContext";
 import { SuperheroCard } from "../components/SuperheroCard";
-import { SearchBar } from "../components/SearchBar";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { SuperheroSelectionModal } from "../components/SuperheroSelectionModal";
 import { Superhero } from "../types";
+import {
+  colors,
+  spacing,
+  typography,
+  borderRadius,
+  commonStyles,
+} from "../theme";
 
 interface AddMemberScreenProps {
   route: {
@@ -29,7 +35,16 @@ export const AddMemberScreen: React.FC<AddMemberScreenProps> = ({
   navigation,
 }) => {
   const { teamId, teamName } = route.params;
-  const { teams, removeMemberFromTeam } = useApp();
+  const {
+    teams,
+    removeMemberFromTeam,
+    addMemberToTeam,
+    addMultipleMembersToTeam,
+    superheroes,
+    addToFavorites,
+    removeFromFavorites,
+  } = useApp();
+  const [showSelectionModal, setShowSelectionModal] = useState(false);
 
   const currentTeam = teams.find((team) => team.id === teamId);
 
@@ -42,23 +57,56 @@ export const AddMemberScreen: React.FC<AddMemberScreenProps> = ({
     }
   };
 
-  const renderMember = ({ item }: { item: Superhero }) => (
-    <View style={styles.memberContainer}>
-      <SuperheroCard
-        superhero={item}
-        onToggleFavorite={() => {}}
-        onPress={() =>
-          navigation.navigate("SuperheroDetail", { superhero: item })
-        }
-      />
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => handleRemoveMember(item.id, item.name)}
-      >
-        <Ionicons name="trash" size={18} color="#FFFFFF" />
-      </TouchableOpacity>
-    </View>
+  const handleToggleFavorite = async (superhero: Superhero) => {
+    try {
+      if (superhero.isFavorite) {
+        await removeFromFavorites(superhero.id);
+      } else {
+        await addToFavorites(superhero);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not update favorite status");
+    }
+  };
+
+  const handleAddMembers = async (selectedSuperheroes: Superhero[]) => {
+    try {
+      await addMultipleMembersToTeam(teamId, selectedSuperheroes);
+      Alert.alert(
+        "Success",
+        `${selectedSuperheroes.length} member(s) added to team`
+      );
+    } catch (error) {
+      Alert.alert("Error", "Could not add members to team");
+    }
+  };
+
+  const availableSuperheroes = superheroes.filter(
+    (hero) => !currentTeam?.members.some((member) => member.id === hero.id)
   );
+
+  const renderMember = ({ item }: { item: Superhero }) => {
+    const fullSuperhero =
+      superheroes.find((hero) => hero.id === item.id) || item;
+
+    return (
+      <View style={styles.memberContainer}>
+        <SuperheroCard
+          superhero={fullSuperhero}
+          onToggleFavorite={handleToggleFavorite}
+          onPress={() =>
+            navigation.navigate("SuperheroDetail", { superhero: fullSuperhero })
+          }
+        />
+        <TouchableOpacity
+          style={styles.removeButton}
+          onPress={() => handleRemoveMember(item.id, item.name)}
+        >
+          <Ionicons name="trash" size={18} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -67,7 +115,7 @@ export const AddMemberScreen: React.FC<AddMemberScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.title}>Add Member</Text>
         <View style={styles.placeholder} />
@@ -89,7 +137,7 @@ export const AddMemberScreen: React.FC<AddMemberScreenProps> = ({
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="people" size={80} color="#8B5CF6" />
+            <Ionicons name="people-outline" size={80} color={colors.violet} />
             <Text style={styles.emptyText}>No members in this team</Text>
             <Text style={styles.emptySubtext}>
               Tap the + button to add members
@@ -100,15 +148,18 @@ export const AddMemberScreen: React.FC<AddMemberScreenProps> = ({
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => {
-          navigation.navigate("SearchSuperhero", {
-            teamId,
-            teamName,
-          });
-        }}
+        onPress={() => setShowSelectionModal(true)}
       >
-        <Ionicons name="add" size={24} color="#FFFFFF" />
+        <Ionicons name="add" size={24} color={colors.text} />
       </TouchableOpacity>
+
+      <SuperheroSelectionModal
+        visible={showSelectionModal}
+        onClose={() => setShowSelectionModal(false)}
+        onAddMembers={handleAddMembers}
+        availableSuperheroes={availableSuperheroes}
+        teamName={teamName}
+      />
     </View>
   );
 };
@@ -116,62 +167,62 @@ export const AddMemberScreen: React.FC<AddMemberScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1A0B2E",
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 50,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
   },
   backButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontSize: typography.xxxl,
+    fontWeight: typography.bold,
+    color: colors.text,
   },
   placeholder: {
     width: 32,
   },
   teamInfo: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   teamName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 4,
+    fontSize: typography.lg,
+    fontWeight: typography.bold,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
   memberCount: {
-    fontSize: 14,
-    color: "#B0B0B0",
+    fontSize: typography.sm,
+    color: colors.textSecondary,
   },
   listContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
     flexGrow: 1,
   },
   memberContainer: {
     position: "relative",
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   removeButton: {
     position: "absolute",
-    top: 16,
-    right: 16,
-    backgroundColor: "#FF6B6B",
-    borderRadius: 20,
+    bottom: spacing.lg,
+    right: spacing.lg,
+    backgroundColor: colors.error,
+    borderRadius: borderRadius.xxxl,
     width: 40,
     height: 40,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
-    shadowColor: "#000",
+    shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -180,19 +231,19 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
     borderWidth: 2,
-    borderColor: "#FFFFFF",
+    borderColor: colors.text,
   },
   fab: {
     position: "absolute",
-    bottom: 40,
-    right: 20,
-    backgroundColor: "#8B5CF6",
-    borderRadius: 28,
+    bottom: spacing.xxxxl,
+    right: spacing.xl,
+    backgroundColor: colors.violet,
+    borderRadius: borderRadius.xxxl,
     width: 56,
     height: 56,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -205,21 +256,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 60,
-    paddingHorizontal: 32,
+    paddingVertical: spacing.xxxxl,
+    paddingHorizontal: spacing.xxxl,
     minHeight: 200,
   },
   emptyText: {
-    fontSize: 18,
-    color: "#FFFFFF",
+    fontSize: typography.lg,
+    color: colors.text,
     textAlign: "center",
-    fontWeight: "600",
-    marginTop: 20,
-    marginBottom: 8,
+    fontWeight: typography.semibold,
+    marginTop: spacing.xl,
+    marginBottom: spacing.sm,
   },
   emptySubtext: {
-    fontSize: 16,
-    color: "#B0B0B0",
+    fontSize: typography.md,
+    color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 22,
   },

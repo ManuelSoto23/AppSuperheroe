@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     bottom: spacing.xl,
     right: spacing.lg,
     backgroundColor: colors.violet,
-    borderRadius: 28,
+    borderRadius: borderRadius.xxxl,
     width: 56,
     height: 56,
     justifyContent: "center",

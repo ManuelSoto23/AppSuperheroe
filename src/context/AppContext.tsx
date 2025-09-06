@@ -255,6 +255,36 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
+  const addMultipleMembersToTeam = async (
+    teamId: string,
+    superheroes: Superhero[]
+  ) => {
+    try {
+      const authResult = await biometricService.authenticate();
+      if (!authResult.success) {
+        throw new Error(authResult.error?.message || "Authentication failed");
+      }
+
+      for (const superhero of superheroes) {
+        await databaseService.addMemberToTeam(teamId, superhero.id);
+        dispatch({
+          type: "ADD_MEMBER_TO_TEAM",
+          payload: { teamId, superhero },
+        });
+      }
+
+      const teams = await databaseService.getAllTeams();
+      dispatch({ type: "SET_TEAMS", payload: teams });
+    } catch (error) {
+      console.error("Error adding multiple members to team:", error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Error adding members to team",
+      });
+      throw error;
+    }
+  };
+
   const removeMemberFromTeam = async (teamId: string, superheroId: number) => {
     try {
       const authResult = await biometricService.authenticate();
@@ -299,6 +329,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     removeFromFavorites,
     createTeam,
     addMemberToTeam,
+    addMultipleMembersToTeam,
     removeMemberFromTeam,
     deleteTeam,
     refreshSuperheroes,

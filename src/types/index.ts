@@ -75,6 +75,10 @@ export interface AppContextType {
   removeFromFavorites: (superheroId: number) => void;
   createTeam: (name: string) => Promise<string>;
   addMemberToTeam: (teamId: string, superhero: Superhero) => Promise<void>;
+  addMultipleMembersToTeam: (
+    teamId: string,
+    superheroes: Superhero[]
+  ) => Promise<void>;
   removeMemberFromTeam: (teamId: string, superheroId: number) => Promise<void>;
   deleteTeam: (teamId: string) => Promise<void>;
   refreshSuperheroes: () => Promise<void>;
