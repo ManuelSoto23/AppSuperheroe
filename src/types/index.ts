@@ -1,4 +1,3 @@
-// Tipos para Superhéroes
 export interface Superhero {
   id: number;
   name: string;
@@ -9,8 +8,8 @@ export interface Superhero {
   work: Work;
   connections: Connections;
   images: Images;
-  powerScore?: number; // Calculado localmente
-  isFavorite?: boolean; // Para favoritos
+  powerScore?: number;
+  isFavorite?: boolean;
 }
 
 export interface PowerStats {
@@ -66,32 +65,6 @@ export interface Team {
   updatedAt: Date;
 }
 
-// Tipos para Autenticación Biométrica
-export interface BiometricAuthenticationError {
-  code: string;
-  message: string;
-}
-
-export interface BiometricAuthResult {
-  success: boolean;
-  error?: BiometricAuthenticationError;
-}
-
-// Tipos para Navegación
-export type RootStackParamList = {
-  Main: undefined;
-  TeamDetail: { teamId: string; teamName: string };
-  AddMember: { teamId: string; teamName: string };
-  SearchSuperhero: { teamId: string; teamName: string };
-  SuperheroDetail: { superhero: Superhero };
-};
-
-export type MainTabParamList = {
-  Superheroes: undefined;
-  Teams: undefined;
-  Favorites: undefined;
-};
-
 export interface AppContextType {
   superheroes: Superhero[];
   favorites: Superhero[];
@@ -106,3 +79,16 @@ export interface AppContextType {
   deleteTeam: (teamId: string) => Promise<void>;
   refreshSuperheroes: () => Promise<void>;
 }
+
+export type RootStackParamList = {
+  Main: undefined;
+  SuperheroDetail: { superhero: any };
+  SearchSuperhero: { teamId: string; teamName: string };
+  AddMember: { teamId: string; teamName: string };
+};
+
+export type MainTabParamList = {
+  Superheroes: undefined;
+  Favorites: undefined;
+  Teams: undefined;
+};
