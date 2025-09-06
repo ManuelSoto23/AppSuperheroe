@@ -35,7 +35,33 @@ class ApiService {
   }
 
   private calculatePowerScore(powerstats: any): number {
-    return 0;
+    const stats = {
+      intelligence: parseInt(powerstats.intelligence) || 0,
+      strength: parseInt(powerstats.strength) || 0,
+      speed: parseInt(powerstats.speed) || 0,
+      durability: parseInt(powerstats.durability) || 0,
+      power: parseInt(powerstats.power) || 0,
+      combat: parseInt(powerstats.combat) || 0,
+    };
+
+    const weights = {
+      intelligence: 0.15,
+      strength: 0.2,
+      speed: 0.15,
+      durability: 0.2,
+      power: 0.2,
+      combat: 0.1,
+    };
+
+    const weightedScore =
+      stats.intelligence * weights.intelligence +
+      stats.strength * weights.strength +
+      stats.speed * weights.speed +
+      stats.durability * weights.durability +
+      stats.power * weights.power +
+      stats.combat * weights.combat;
+
+    return Math.min(100, Math.max(0, Math.round(weightedScore * 100) / 100));
   }
 }
 
