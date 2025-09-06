@@ -4,22 +4,28 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
   Alert,
+  TouchableOpacity,
   TextInput,
   Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../context/AppContext";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { Team } from "../types";
 import {
-  commonStyles,
   colors,
   typography,
   spacing,
+  commonStyles,
   borderRadius,
 } from "../theme";
 
-export const TeamsScreen: React.FC = () => {
+interface TeamsScreenProps {
+  navigation: any;
+}
+
+export const TeamsScreen: React.FC<TeamsScreenProps> = ({ navigation }) => {
   const { teams, loading, createTeam, deleteTeam } = useApp();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [teamName, setTeamName] = useState("");
@@ -62,7 +68,7 @@ export const TeamsScreen: React.FC = () => {
     );
   };
 
-  const renderTeam = ({ item }: { item: any }) => (
+  const renderTeam = ({ item }: { item: Team }) => (
     <View style={styles.teamCard}>
       <View style={styles.teamInfo}>
         <Text style={styles.teamName}>{item.name}</Text>
@@ -74,7 +80,10 @@ export const TeamsScreen: React.FC = () => {
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => {
-            // TODO: Navegar a la pantalla paraagregar superheroe
+            navigation.navigate("AddMember", {
+              teamId: item.id,
+              teamName: item.name,
+            });
           }}
         >
           <Ionicons name="chevron-forward" size={20} color={colors.text} />
@@ -90,17 +99,14 @@ export const TeamsScreen: React.FC = () => {
   );
 
   if (loading) {
-    return (
-      <View style={commonStyles.container}>
-        <Text style={commonStyles.title}>Teams</Text>
-        <Text style={styles.loadingText}>Loading teams...</Text>
-      </View>
-    );
+    return <LoadingSpinner message="Loading teams..." />;
   }
 
   return (
     <View style={commonStyles.container}>
-      <Text style={commonStyles.title}>Teams</Text>
+      <View style={styles.header}>
+        <Text style={commonStyles.title}>Teams</Text>
+      </View>
 
       <FlatList
         data={teams}
@@ -119,6 +125,7 @@ export const TeamsScreen: React.FC = () => {
         }
       />
 
+      {/* Botón flotante para agregar equipo */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setShowCreateModal(true)}
@@ -126,6 +133,7 @@ export const TeamsScreen: React.FC = () => {
         <Ionicons name="add" size={24} color={colors.text} />
       </TouchableOpacity>
 
+      {/* Modal para crear equipo */}
       <Modal
         visible={showCreateModal}
         transparent
@@ -169,11 +177,28 @@ export const TeamsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  loadingText: {
-    fontSize: typography.md,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    paddingTop: 50,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+  title: {
+    fontSize: typography.xxxl,
+    fontWeight: typography.bold,
     color: colors.text,
-    textAlign: "center",
-    marginTop: spacing.xl,
+    marginBottom: spacing.lg,
+  },
+  addButton: {
+    backgroundColor: colors.secondary,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContainer: {
     paddingHorizontal: spacing.lg,
@@ -184,7 +209,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: spacing.xl,
     right: spacing.lg,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.accent,
     borderRadius: 28,
     width: 56,
     height: 56,
@@ -201,7 +226,7 @@ const styles = StyleSheet.create({
   },
   teamCard: {
     backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
+    borderRadius: 12,
     marginVertical: spacing.xs,
     marginHorizontal: spacing.xs,
     padding: spacing.lg,
@@ -223,7 +248,7 @@ const styles = StyleSheet.create({
     fontSize: typography.lg,
     fontWeight: typography.bold,
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   memberCount: {
     fontSize: typography.sm,
@@ -289,7 +314,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     backgroundColor: colors.secondary,
-    borderRadius: borderRadius.md,
+    borderRadius: 8,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     fontSize: typography.md,
@@ -303,7 +328,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     backgroundColor: colors.textMuted,
-    borderRadius: borderRadius.md,
+    borderRadius: 8,
     paddingVertical: spacing.md,
     marginRight: spacing.sm,
     alignItems: "center",
@@ -316,7 +341,7 @@ const styles = StyleSheet.create({
   createButton: {
     flex: 1,
     backgroundColor: colors.secondary,
-    borderRadius: borderRadius.md,
+    borderRadius: 8,
     paddingVertical: spacing.md,
     marginLeft: spacing.sm,
     alignItems: "center",
