@@ -46,9 +46,21 @@ function MainTabs() {
         headerTintColor: colors.text,
       })}
     >
-      <Tab.Screen name="Superheroes" component={SuperheroesScreen} />
-      <Tab.Screen name="Teams" component={TeamsScreen} />
-      <Tab.Screen name="Favorites" component={FavoritesScreen} />
+      <Tab.Screen
+        name="Superheroes"
+        component={SuperheroesScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Teams"
+        component={TeamsScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Favorites"
+        component={FavoritesScreen}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 }

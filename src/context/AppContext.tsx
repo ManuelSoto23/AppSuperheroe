@@ -55,15 +55,31 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case "SET_TEAMS":
       return { ...state, teams: action.payload };
     case "TOGGLE_FAVORITE":
-      return {
-        ...state,
-        superheroes: state.superheroes.map((hero) =>
-          hero.id === action.payload
-            ? { ...hero, isFavorite: !hero.isFavorite }
-            : hero
-        ),
-        favorites: state.favorites.filter((hero) => hero.id !== action.payload),
-      };
+      const hero = state.superheroes.find((h) => h.id === action.payload);
+      if (hero) {
+        const isCurrentlyFavorite = state.favorites.some(
+          (fav) => fav.id === action.payload
+        );
+
+        if (isCurrentlyFavorite) {
+          return {
+            ...state,
+            superheroes: state.superheroes.map((h) =>
+              h.id === action.payload ? { ...h, isFavorite: false } : h
+            ),
+            favorites: state.favorites.filter((h) => h.id !== action.payload),
+          };
+        } else {
+          return {
+            ...state,
+            superheroes: state.superheroes.map((h) =>
+              h.id === action.payload ? { ...h, isFavorite: true } : h
+            ),
+            favorites: [...state.favorites, { ...hero, isFavorite: true }],
+          };
+        }
+      }
+      return state;
     case "ADD_TEAM":
       return { ...state, teams: [...state.teams, action.payload] };
     case "DELETE_TEAM":
@@ -139,11 +155,21 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const addToFavorites = async (superhero: Superhero) => {
-    dispatch({ type: "TOGGLE_FAVORITE", payload: superhero.id });
+    try {
+      dispatch({ type: "TOGGLE_FAVORITE", payload: superhero.id });
+    } catch (error) {
+      console.error("Error adding to favorites:", error);
+      dispatch({ type: "SET_ERROR", payload: "Error adding to favorites" });
+    }
   };
 
   const removeFromFavorites = async (superheroId: number) => {
-    dispatch({ type: "TOGGLE_FAVORITE", payload: superheroId });
+    try {
+      dispatch({ type: "TOGGLE_FAVORITE", payload: superheroId });
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+      dispatch({ type: "SET_ERROR", payload: "Error removing from favorites" });
+    }
   };
 
   const createTeam = async (name: string): Promise<string> => {
