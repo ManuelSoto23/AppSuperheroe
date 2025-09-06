@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import React, { useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Alert,
+  RefreshControl,
+} from "react-native";
 import { useApp } from "../context/AppContext";
-import { LoadingSpinner } from "../components/LoadingSpinner";
 import { SuperheroCard } from "../components/SuperheroCard";
 import { SearchBar } from "../components/SearchBar";
-import { commonStyles, colors, typography, spacing } from "../theme";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { Superhero } from "../types";
+import { colors, typography, spacing, commonStyles } from "../theme";
 
 interface SuperheroesScreenProps {
   navigation: any;
@@ -13,52 +21,102 @@ interface SuperheroesScreenProps {
 export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
   navigation,
 }) => {
-  const { superheroes, loading, addToFavorites, removeFromFavorites } =
-    useApp();
+  const {
+    superheroes,
+    loading,
+    addToFavorites,
+    removeFromFavorites,
+    refreshSuperheroes,
+  } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filteredSuperheroes = superheroes.filter((hero) =>
-    hero.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSuperheroes = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return superheroes;
+    }
 
-  const handleFavoritePress = (superhero: any) => {
-    if (superhero.isFavorite) {
-      removeFromFavorites(superhero.id);
-    } else {
-      addToFavorites(superhero);
+    const query = searchQuery.toLowerCase();
+    return superheroes.filter(
+      (hero) =>
+        hero.name.toLowerCase().includes(query) ||
+        hero.biography.fullName.toLowerCase().includes(query) ||
+        hero.biography.aliases.some((alias) =>
+          alias.toLowerCase().includes(query)
+        )
+    );
+  }, [superheroes, searchQuery]);
+
+  const handleToggleFavorite = async (superhero: Superhero) => {
+    try {
+      if (superhero.isFavorite) {
+        await removeFromFavorites(superhero.id);
+      } else {
+        await addToFavorites(superhero);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not update favorites");
     }
   };
 
-  const renderSuperhero = ({ item }: { item: any }) => (
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshSuperheroes();
+    } catch (error) {
+      Alert.alert("Error", "Could not update the list");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const renderSuperhero = ({ item }: { item: Superhero }) => (
     <SuperheroCard
       superhero={item}
-      onToggleFavorite={handleFavoritePress}
-      onPress={() => {
-        navigation.navigate("SuperheroDetail", { superhero: item });
-      }}
+      onToggleFavorite={handleToggleFavorite}
+      onPress={() =>
+        navigation.navigate("SuperheroDetail", { superhero: item })
+      }
     />
   );
 
-  if (loading) {
+  if (loading && superheroes.length === 0) {
     return <LoadingSpinner message="Loading superheroes..." />;
   }
 
   return (
     <View style={commonStyles.container}>
-      <Text style={commonStyles.title}>Superheroes</Text>
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Search superheroes..."
-      />
+      <View style={styles.header}>
+        <Text style={commonStyles.title}>Superheroes</Text>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search superheroes..."
+        />
+      </View>
+
       <FlatList
         data={filteredSuperheroes}
         renderItem={renderSuperhero}
         keyExtractor={(item) => item.id.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.secondary]}
+          />
+        }
+        contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        style={styles.flatList}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No superheroes found</Text>
+            <Text style={styles.emptyText}>
+              {searchQuery
+                ? "No superheroes found"
+                : "No superheroes available"}
+            </Text>
           </View>
         }
       />
@@ -67,15 +125,29 @@ export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: 50,
+    paddingBottom: spacing.lg,
+  },
+  flatList: {
+    flex: 1,
+  },
+  listContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+    flexGrow: 1,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 50,
+    paddingVertical: 40,
+    minHeight: 200,
   },
   emptyText: {
-    fontSize: 18,
-    color: "#666",
+    fontSize: typography.md,
+    color: colors.textSecondary,
     textAlign: "center",
   },
 });
