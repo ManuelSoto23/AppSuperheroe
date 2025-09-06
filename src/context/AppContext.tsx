@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  ReactNode,
+} from "react";
 import { Superhero, Team, AppContextType } from "../types";
+import { apiService } from "../services/api";
 
 interface AppState {
   superheroes: Superhero[];
@@ -109,6 +116,28 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
+  useEffect(() => {
+    loadSuperheroes();
+  }, []);
+
+  const loadSuperheroes = async () => {
+    try {
+      dispatch({ type: "SET_LOADING", payload: true });
+      dispatch({ type: "SET_ERROR", payload: null });
+
+      const superheroes = await apiService.getAllSuperheroes();
+      dispatch({ type: "SET_SUPERHEROES", payload: superheroes });
+    } catch (error) {
+      console.error("Error loading superheroes:", error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Error loading superheroes",
+      });
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
+    }
+  };
+
   const addToFavorites = async (superhero: Superhero) => {
     dispatch({ type: "TOGGLE_FAVORITE", payload: superhero.id });
   };
@@ -145,7 +174,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: "DELETE_TEAM", payload: teamId });
   };
 
-  const refreshSuperheroes = async () => {};
+  const refreshSuperheroes = async () => {
+    await loadSuperheroes();
+  };
 
   const value: AppContextType = {
     ...state,
