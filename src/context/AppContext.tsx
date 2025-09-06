@@ -323,6 +323,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
+  const searchSuperheroes = async (query: string): Promise<Superhero[]> => {
+    try {
+      if (!query.trim()) {
+        return state.superheroes;
+      }
+      return await databaseService.searchSuperheroes(query);
+    } catch (error) {
+      console.error("Error searching superheroes:", error);
+      dispatch({ type: "SET_ERROR", payload: "Error searching superheroes" });
+      return [];
+    }
+  };
+
   const value: AppContextType = {
     ...state,
     addToFavorites,
@@ -333,6 +346,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     removeMemberFromTeam,
     deleteTeam,
     refreshSuperheroes,
+    searchSuperheroes,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

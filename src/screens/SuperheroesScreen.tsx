@@ -27,25 +27,37 @@ export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
     addToFavorites,
     removeFromFavorites,
     refreshSuperheroes,
+    searchSuperheroes,
   } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [searchResults, setSearchResults] = useState<Superhero[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const filteredSuperheroes = useMemo(() => {
     if (!searchQuery.trim()) {
       return superheroes;
     }
+    return searchResults;
+  }, [superheroes, searchQuery, searchResults]);
 
-    const query = searchQuery.toLowerCase();
-    return superheroes.filter(
-      (hero) =>
-        hero.name.toLowerCase().includes(query) ||
-        hero.biography.fullName.toLowerCase().includes(query) ||
-        hero.biography.aliases.some((alias) =>
-          alias.toLowerCase().includes(query)
-        )
-    );
-  }, [superheroes, searchQuery]);
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await searchSuperheroes(query);
+      setSearchResults(results);
+    } catch (error) {
+      console.error("Error searching:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const handleToggleFavorite = async (superhero: Superhero) => {
     try {
@@ -90,7 +102,7 @@ export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
         <Text style={commonStyles.title}>Superheroes</Text>
         <SearchBar
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearch}
           placeholder="Search superheroes..."
         />
       </View>
@@ -111,13 +123,19 @@ export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
         showsVerticalScrollIndicator={false}
         style={styles.flatList}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {searchQuery
-                ? "No superheroes found"
-                : "No superheroes available"}
-            </Text>
-          </View>
+          isSearching ? (
+            <View style={styles.loadingContainer}>
+              <LoadingSpinner message="Searching..." />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {searchQuery
+                  ? "No superheroes found"
+                  : "No superheroes available"}
+              </Text>
+            </View>
+          )
         }
       />
     </View>
@@ -139,6 +157,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+    minHeight: 200,
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",

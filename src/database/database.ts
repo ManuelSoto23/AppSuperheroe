@@ -24,6 +24,7 @@ class DatabaseService {
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
         slug TEXT NOT NULL,
+        realName TEXT,
         powerstats TEXT NOT NULL,
         appearance TEXT NOT NULL,
         biography TEXT NOT NULL,
@@ -35,6 +36,13 @@ class DatabaseService {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    await this.db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_superheroes_name ON superheroes(name);
+    `);
+    await this.db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_superheroes_realname ON superheroes(realName);
     `);
 
     await this.db.execAsync(`
@@ -62,14 +70,17 @@ class DatabaseService {
     if (!this.db) throw new Error("Database not initialized");
 
     for (const hero of superheroes) {
+      const realName = hero.biography?.fullName || "";
+
       await this.db.runAsync(
         `INSERT OR REPLACE INTO superheroes 
-         (id, name, slug, powerstats, appearance, biography, work, connections, images, powerScore, isFavorite)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, name, slug, realName, powerstats, appearance, biography, work, connections, images, powerScore, isFavorite)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           hero.id,
           hero.name,
           hero.slug,
+          realName,
           JSON.stringify(hero.powerstats),
           JSON.stringify(hero.appearance),
           JSON.stringify(hero.biography),
@@ -92,6 +103,7 @@ class DatabaseService {
 
     return result.map((row: any) => ({
       ...row,
+      realName: row.realName || "",
       powerstats: JSON.parse(row.powerstats),
       appearance: JSON.parse(row.appearance),
       biography: JSON.parse(row.biography),
@@ -108,7 +120,8 @@ class DatabaseService {
     const result = await this.db.getAllAsync(
       `
       SELECT * FROM superheroes 
-      WHERE name LIKE ? OR biography LIKE ?
+      WHERE name LIKE ? 
+         OR realName LIKE ?
       ORDER BY name
     `,
       [`%${query}%`, `%${query}%`]
@@ -116,6 +129,7 @@ class DatabaseService {
 
     return result.map((row: any) => ({
       ...row,
+      realName: row.realName || "",
       powerstats: JSON.parse(row.powerstats),
       appearance: JSON.parse(row.appearance),
       biography: JSON.parse(row.biography),
@@ -135,6 +149,7 @@ class DatabaseService {
 
     return result.map((row: any) => ({
       ...row,
+      realName: row.realName || "",
       powerstats: JSON.parse(row.powerstats),
       appearance: JSON.parse(row.appearance),
       biography: JSON.parse(row.biography),
@@ -204,6 +219,7 @@ class DatabaseService {
 
     return result.map((row: any) => ({
       ...row,
+      realName: row.realName || "",
       powerstats: JSON.parse(row.powerstats),
       appearance: JSON.parse(row.appearance),
       biography: JSON.parse(row.biography),

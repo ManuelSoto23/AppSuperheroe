@@ -27,7 +27,7 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
     return favorites.filter(
       (hero) =>
         hero.name.toLowerCase().includes(query) ||
-        hero.biography.fullName.toLowerCase().includes(query) ||
+        hero.realName?.toLowerCase().includes(query) ||
         hero.biography.aliases.some((alias) =>
           alias.toLowerCase().includes(query)
         )

@@ -2,6 +2,7 @@ export interface Superhero {
   id: number;
   name: string;
   slug: string;
+  realName?: string;
   powerstats: PowerStats;
   appearance: Appearance;
   biography: Biography;
@@ -82,6 +83,7 @@ export interface AppContextType {
   removeMemberFromTeam: (teamId: string, superheroId: number) => Promise<void>;
   deleteTeam: (teamId: string) => Promise<void>;
   refreshSuperheroes: () => Promise<void>;
+  searchSuperheroes: (query: string) => Promise<Superhero[]>;
 }
 
 export type RootStackParamList = {

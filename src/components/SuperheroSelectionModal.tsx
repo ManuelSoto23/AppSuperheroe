@@ -35,9 +35,7 @@ export const SuperheroSelectionModal: React.FC<
     return availableSuperheroes.filter(
       (hero) =>
         hero.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hero.biography.fullName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
+        hero.realName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [availableSuperheroes, searchQuery]);
 

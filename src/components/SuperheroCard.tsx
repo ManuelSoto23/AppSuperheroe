@@ -43,7 +43,7 @@ export const SuperheroCard: React.FC<SuperheroCardProps> = ({
           {superhero.name}
         </Text>
         <Text style={styles.realName} numberOfLines={2}>
-          {superhero.biography.fullName || "Real name unknown"}
+          {superhero.realName || "Real name unknown"}
         </Text>
 
         <View style={styles.powerSection}>

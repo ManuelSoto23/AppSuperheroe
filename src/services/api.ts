@@ -23,6 +23,7 @@ class ApiService {
       id: hero.id,
       name: hero.name,
       slug: hero.slug,
+      realName: hero.biography?.fullName || "",
       powerstats: hero.powerstats,
       appearance: hero.appearance,
       biography: hero.biography,

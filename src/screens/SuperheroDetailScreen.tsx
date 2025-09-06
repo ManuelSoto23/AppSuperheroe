@@ -146,7 +146,7 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
           <View style={styles.basicInfo}>
             <StatItem
               label="Real Name"
-              value={superhero.biography.fullName || "Unknown"}
+              value={superhero.realName || "Unknown"}
             />
             <StatItem
               label="Alter egos"

@@ -27,10 +27,8 @@ export const SuperheroSelectionCard: React.FC<SuperheroSelectionCardProps> = ({
 
       <View style={styles.superheroInfo}>
         <Text style={styles.superheroName}>{superhero.name}</Text>
-        {superhero.biography.fullName && (
-          <Text style={styles.superheroRealName}>
-            {superhero.biography.fullName}
-          </Text>
+        {superhero.realName && (
+          <Text style={styles.superheroRealName}>{superhero.realName}</Text>
         )}
         <View style={styles.powerScoreContainer}>
           <Ionicons name="flash" size={12} color={colors.gold} />

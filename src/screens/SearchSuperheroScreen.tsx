@@ -48,7 +48,7 @@ export const SearchSuperheroScreen: React.FC<SearchSuperheroScreenProps> = ({
     return availableSuperheroes.filter(
       (hero) =>
         hero.name.toLowerCase().includes(query) ||
-        hero.biography.fullName.toLowerCase().includes(query) ||
+        hero.realName?.toLowerCase().includes(query) ||
         hero.biography.aliases.some((alias) =>
           alias.toLowerCase().includes(query)
         )
