@@ -1,6 +1,7 @@
 export const colors = {
   primary: "#0e032c", // Púrpura muy oscuro
   secondary: "#332b68", // Púrpura medio
+  violet: "#7c64fa", // Púrpura vibrante
   accent: "#E94560", // Rojo vibrante
   gold: "#FFD700", // Dorado para favoritos
 
