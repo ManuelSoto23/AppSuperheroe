@@ -116,7 +116,7 @@ export const TeamsScreen: React.FC<TeamsScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="people" size={80} color={colors.accent} />
+            <Ionicons name="people-outline" size={80} color={colors.text} />
             <Text style={styles.emptyText}>Create your first team</Text>
             <Text style={styles.emptySubtext}>
               Tap the + button to create a new superhero team
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: spacing.xl,
     right: spacing.lg,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.secondary,
     borderRadius: 28,
     width: 56,
     height: 56,

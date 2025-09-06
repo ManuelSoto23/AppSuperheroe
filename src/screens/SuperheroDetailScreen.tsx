@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../context/AppContext";
 import { Superhero } from "../types";
@@ -27,18 +26,32 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
   navigation,
 }) => {
   const { superhero: initialSuperhero } = route.params;
-  const { addToFavorites, removeFromFavorites, favorites } = useApp();
+  const { addToFavorites, removeFromFavorites, favorites, superheroes } =
+    useApp();
 
-  // Obtener el superhéroe actualizado del contexto
+  const [isFavorite, setIsFavorite] = useState(initialSuperhero.isFavorite);
+
   const superhero =
-    favorites.find((fav) => fav.id === initialSuperhero.id) || initialSuperhero;
+    favorites.find((fav) => fav.id === initialSuperhero.id) ||
+    superheroes.find((hero) => hero.id === initialSuperhero.id) ||
+    initialSuperhero;
+
+  useEffect(() => {
+    const currentHero =
+      favorites.find((fav) => fav.id === initialSuperhero.id) ||
+      superheroes.find((hero) => hero.id === initialSuperhero.id) ||
+      initialSuperhero;
+    setIsFavorite(currentHero?.isFavorite || false);
+  }, [favorites, superheroes, initialSuperhero.id]);
 
   const handleToggleFavorite = async () => {
     try {
-      if (superhero.isFavorite) {
+      if (isFavorite) {
         await removeFromFavorites(superhero.id);
+        setIsFavorite(false);
       } else {
         await addToFavorites(superhero);
+        setIsFavorite(true);
       }
     } catch (error) {
       console.error("Error updating favorites:", error);
@@ -111,7 +124,7 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -119,9 +132,9 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
               onPress={handleToggleFavorite}
             >
               <Ionicons
-                name={superhero.isFavorite ? "heart" : "heart-outline"}
+                name={isFavorite ? "heart" : "heart-outline"}
                 size={24}
-                color={superhero.isFavorite ? "#FF6B6B" : "#FFFFFF"}
+                color={isFavorite ? colors.accent : colors.text}
               />
             </TouchableOpacity>
           </View>
@@ -186,7 +199,7 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.background,
   },
   imageContainer: {
     position: "relative",
@@ -232,7 +245,7 @@ const styles = StyleSheet.create({
   heroName: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: colors.text,
     textAlign: "center",
     marginBottom: 20,
   },

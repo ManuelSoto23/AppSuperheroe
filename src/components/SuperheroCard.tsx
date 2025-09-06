@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Superhero } from "../types";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, typography, spacing } from "../theme";
+import { colors, typography, spacing, borderRadius } from "../theme";
 
 interface SuperheroCardProps {
   superhero: Superhero;
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   favoriteButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 15,
+    backgroundColor: colors.secondary,
+    borderRadius: borderRadius.xl,
     width: 30,
     height: 30,
     justifyContent: "center",
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   powerIcon: {
     backgroundColor: "rgba(255, 215, 0, 0.2)",
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
     padding: 4,
     marginRight: 8,
   },
