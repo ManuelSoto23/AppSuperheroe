@@ -1,40 +1,61 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, typography, spacing, borderRadius } from "../theme";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Superhero } from "../types";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, typography, spacing } from "../theme";
 
 interface SuperheroCardProps {
   superhero: Superhero;
-  onPress: () => void;
-  onFavoritePress: () => void;
+  onToggleFavorite: (superhero: Superhero) => void;
+  onPress?: () => void;
 }
 
 export const SuperheroCard: React.FC<SuperheroCardProps> = ({
   superhero,
+  onToggleFavorite,
   onPress,
-  onFavoritePress,
 }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      <View style={styles.content}>
-        <View style={styles.info}>
-          <Text style={styles.name}>{superhero.name}</Text>
-          <Text style={styles.publisher}>{superhero.biography.publisher}</Text>
-          <Text style={styles.powerScore}>
-            Power Score: {superhero.powerScore || 0}
-          </Text>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.imageWrapper}>
+        <Image
+          source={{ uri: superhero.images.md }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <View style={styles.imageOverlay}>
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={() => onToggleFavorite(superhero)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={superhero.isFavorite ? "heart" : "heart-outline"}
+              size={18}
+              color={superhero.isFavorite ? colors.accent : colors.text}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={onFavoritePress}
-        >
-          <Ionicons
-            name={superhero.isFavorite ? "heart" : "heart-outline"}
-            size={24}
-            color={superhero.isFavorite ? colors.gold : colors.textSecondary}
-          />
-        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.name} numberOfLines={1}>
+          {superhero.name}
+        </Text>
+        <Text style={styles.realName} numberOfLines={2}>
+          {superhero.biography.fullName || "Real name unknown"}
+        </Text>
+
+        {/* Puntuación de poder con icono */}
+        <View style={styles.powerSection}>
+          <View style={styles.powerIcon}>
+            <Ionicons name="flash" size={14} color={colors.gold} />
+          </View>
+          <Text style={styles.powerScore}>
+            {superhero.powerScore?.toFixed(0) || 0}
+          </Text>
+          <Text style={styles.powerMax}>/ 100</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -43,44 +64,96 @@ export const SuperheroCard: React.FC<SuperheroCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    marginVertical: spacing.sm,
-    marginHorizontal: spacing.lg,
-    padding: spacing.lg,
-    shadowColor: colors.primary,
+    borderRadius: 12,
+    marginVertical: 6,
+    marginHorizontal: 4,
+    flexDirection: "row",
+    alignItems: "stretch",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 6,
+    minHeight: 200,
+    overflow: "hidden",
+  },
+  imageWrapper: {
+    position: "relative",
+    width: 200,
+    height: 200,
+    marginRight: 0,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  imageOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    padding: 8,
+  },
+  favoriteButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   content: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  info: {
     flex: 1,
+    padding: spacing.lg,
+    paddingLeft: spacing.md,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
   name: {
     fontSize: typography.lg,
     fontWeight: typography.bold,
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
-  publisher: {
+  realName: {
     fontSize: typography.sm,
     color: colors.textSecondary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    lineHeight: 18,
+  },
+  powerSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  powerIcon: {
+    backgroundColor: "rgba(255, 215, 0, 0.2)",
+    borderRadius: 8,
+    padding: 4,
+    marginRight: 8,
   },
   powerScore: {
-    fontSize: typography.sm,
-    color: colors.accent,
-    fontWeight: typography.semibold,
+    fontSize: typography.md,
+    color: colors.gold,
+    fontWeight: typography.bold,
   },
-  favoriteButton: {
-    padding: spacing.sm,
+  powerMax: {
+    fontSize: typography.sm,
+    color: colors.textSecondary,
+    marginLeft: 2,
   },
 });

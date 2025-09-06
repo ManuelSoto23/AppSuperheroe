@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useApp } from "../context/AppContext";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { SuperheroCard } from "../components/SuperheroCard";
 import { SearchBar } from "../components/SearchBar";
-import { commonStyles } from "../theme";
+import { commonStyles, colors, typography, spacing } from "../theme";
 
-export const SuperheroesScreen: React.FC = () => {
+interface SuperheroesScreenProps {
+  navigation: any;
+}
+
+export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
+  navigation,
+}) => {
   const { superheroes, loading, addToFavorites, removeFromFavorites } =
     useApp();
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,10 +32,10 @@ export const SuperheroesScreen: React.FC = () => {
   const renderSuperhero = ({ item }: { item: any }) => (
     <SuperheroCard
       superhero={item}
+      onToggleFavorite={handleFavoritePress}
       onPress={() => {
-        // TODO: Navegar a la pantalla de detalles del superhéroe
+        navigation.navigate("SuperheroDetail", { superhero: item });
       }}
-      onFavoritePress={() => handleFavoritePress(item)}
     />
   );
 

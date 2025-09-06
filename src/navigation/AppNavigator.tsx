@@ -84,17 +84,17 @@ export function AppNavigator() {
         <Stack.Screen
           name="SuperheroDetail"
           component={SuperheroDetailScreen}
-          options={{ title: "Superhero Details" }}
+          options={{ title: "Superhero Details", headerShown: false }}
         />
         <Stack.Screen
           name="SearchSuperhero"
           component={SearchSuperheroScreen}
-          options={{ title: "Search Superhero" }}
+          options={{ title: "Search Superhero", headerShown: false }}
         />
         <Stack.Screen
           name="AddMember"
           component={AddMemberScreen}
-          options={{ title: "Add Member" }}
+          options={{ title: "Add Member", headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

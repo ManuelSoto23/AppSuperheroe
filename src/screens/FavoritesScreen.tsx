@@ -4,7 +4,13 @@ import { useApp } from "../context/AppContext";
 import { SuperheroCard } from "../components/SuperheroCard";
 import { commonStyles } from "../theme";
 
-export const FavoritesScreen: React.FC = () => {
+interface FavoritesScreenProps {
+  navigation: any;
+}
+
+export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
+  navigation,
+}) => {
   const { favorites, removeFromFavorites } = useApp();
 
   const handleFavoritePress = (superhero: any) => {
@@ -14,10 +20,10 @@ export const FavoritesScreen: React.FC = () => {
   const renderSuperhero = ({ item }: { item: any }) => (
     <SuperheroCard
       superhero={item}
+      onToggleFavorite={handleFavoritePress}
       onPress={() => {
-        // TODO: Navegar a los detalles del superhéroe
+        navigation.navigate("SuperheroDetail", { superhero: item });
       }}
-      onFavoritePress={() => handleFavoritePress(item)}
     />
   );
 
