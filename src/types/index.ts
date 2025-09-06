@@ -92,3 +92,13 @@ export type MainTabParamList = {
   Favorites: undefined;
   Teams: undefined;
 };
+
+export interface BiometricAuthenticationError {
+  code: string;
+  message: string;
+}
+
+export interface BiometricAuthResult {
+  success: boolean;
+  error?: BiometricAuthenticationError;
+}

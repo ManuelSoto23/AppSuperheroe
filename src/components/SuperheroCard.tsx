@@ -46,7 +46,6 @@ export const SuperheroCard: React.FC<SuperheroCardProps> = ({
           {superhero.biography.fullName || "Real name unknown"}
         </Text>
 
-        {/* Puntuación de poder con icono */}
         <View style={styles.powerSection}>
           <View style={styles.powerIcon}>
             <Ionicons name="flash" size={14} color={colors.gold} />

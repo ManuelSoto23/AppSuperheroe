@@ -125,7 +125,6 @@ export const TeamsScreen: React.FC<TeamsScreenProps> = ({ navigation }) => {
         }
       />
 
-      {/* Botón flotante para agregar equipo */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setShowCreateModal(true)}
@@ -133,7 +132,6 @@ export const TeamsScreen: React.FC<TeamsScreenProps> = ({ navigation }) => {
         <Ionicons name="add" size={24} color={colors.text} />
       </TouchableOpacity>
 
-      {/* Modal para crear equipo */}
       <Modal
         visible={showCreateModal}
         transparent

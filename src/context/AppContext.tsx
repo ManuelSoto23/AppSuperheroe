@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import { Superhero, Team, AppContextType } from "../types";
 import { apiService } from "../services/api";
+import { databaseService } from "../database/database";
+import { biometricService } from "../services/biometric";
 
 interface AppState {
   superheroes: Superhero[];
@@ -55,31 +57,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case "SET_TEAMS":
       return { ...state, teams: action.payload };
     case "TOGGLE_FAVORITE":
-      const hero = state.superheroes.find((h) => h.id === action.payload);
-      if (hero) {
-        const isCurrentlyFavorite = state.favorites.some(
-          (fav) => fav.id === action.payload
-        );
-
-        if (isCurrentlyFavorite) {
-          return {
-            ...state,
-            superheroes: state.superheroes.map((h) =>
-              h.id === action.payload ? { ...h, isFavorite: false } : h
-            ),
-            favorites: state.favorites.filter((h) => h.id !== action.payload),
-          };
-        } else {
-          return {
-            ...state,
-            superheroes: state.superheroes.map((h) =>
-              h.id === action.payload ? { ...h, isFavorite: true } : h
-            ),
-            favorites: [...state.favorites, { ...hero, isFavorite: true }],
-          };
-        }
-      }
-      return state;
+      return {
+        ...state,
+        superheroes: state.superheroes.map((hero) =>
+          hero.id === action.payload
+            ? { ...hero, isFavorite: !hero.isFavorite }
+            : hero
+        ),
+        favorites: state.favorites.filter((hero) => hero.id !== action.payload),
+      };
     case "ADD_TEAM":
       return { ...state, teams: [...state.teams, action.payload] };
     case "DELETE_TEAM":
@@ -133,18 +119,58 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
   useEffect(() => {
-    loadSuperheroes();
+    initializeApp();
   }, []);
 
-  const loadSuperheroes = async () => {
+  const initializeApp = async () => {
+    try {
+      dispatch({ type: "SET_LOADING", payload: true });
+      dispatch({ type: "SET_ERROR", payload: null });
+
+      await databaseService.init();
+
+      const [localSuperheroes, localFavorites, localTeams] = await Promise.all([
+        databaseService.getAllSuperheroes(),
+        databaseService.getFavorites(),
+        databaseService.getAllTeams(),
+      ]);
+
+      if (localSuperheroes.length > 0) {
+        dispatch({ type: "SET_SUPERHEROES", payload: localSuperheroes });
+        dispatch({ type: "SET_FAVORITES", payload: localFavorites });
+        dispatch({ type: "SET_TEAMS", payload: localTeams });
+      } else {
+        await refreshSuperheroes();
+      }
+    } catch (error) {
+      console.error("Error initializing app:", error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Error al inicializar la aplicación",
+      });
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
+    }
+  };
+
+  const refreshSuperheroes = async () => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       dispatch({ type: "SET_ERROR", payload: null });
 
       const superheroes = await apiService.getAllSuperheroes();
+      await databaseService.saveSuperheroes(superheroes);
+
+      const [favorites, teams] = await Promise.all([
+        databaseService.getFavorites(),
+        databaseService.getAllTeams(),
+      ]);
+
       dispatch({ type: "SET_SUPERHEROES", payload: superheroes });
+      dispatch({ type: "SET_FAVORITES", payload: favorites });
+      dispatch({ type: "SET_TEAMS", payload: teams });
     } catch (error) {
-      console.error("Error loading superheroes:", error);
+      console.error("Error refreshing superheroes:", error);
       dispatch({
         type: "SET_ERROR",
         payload: "Error loading superheroes",
@@ -156,7 +182,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const addToFavorites = async (superhero: Superhero) => {
     try {
+      await databaseService.toggleFavorite(superhero.id);
       dispatch({ type: "TOGGLE_FAVORITE", payload: superhero.id });
+
+      const favorites = await databaseService.getFavorites();
+      dispatch({ type: "SET_FAVORITES", payload: favorites });
     } catch (error) {
       console.error("Error adding to favorites:", error);
       dispatch({ type: "SET_ERROR", payload: "Error adding to favorites" });
@@ -165,7 +195,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const removeFromFavorites = async (superheroId: number) => {
     try {
+      await databaseService.toggleFavorite(superheroId);
       dispatch({ type: "TOGGLE_FAVORITE", payload: superheroId });
+
+      const favorites = await databaseService.getFavorites();
+      dispatch({ type: "SET_FAVORITES", payload: favorites });
     } catch (error) {
       console.error("Error removing from favorites:", error);
       dispatch({ type: "SET_ERROR", payload: "Error removing from favorites" });
@@ -173,35 +207,90 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const createTeam = async (name: string): Promise<string> => {
-    const teamId = `team_${Date.now()}`;
-    const team: Team = {
-      id: teamId,
-      name,
-      members: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    dispatch({ type: "ADD_TEAM", payload: team });
-    return teamId;
+    try {
+      const authResult = await biometricService.authenticate();
+      if (!authResult.success) {
+        throw new Error(authResult.error?.message || "Authentication failed");
+      }
+
+      const teamId = `team_${Date.now()}`;
+      const team: Team = {
+        id: teamId,
+        name,
+        members: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await databaseService.createTeam(team);
+      dispatch({ type: "ADD_TEAM", payload: team });
+
+      return teamId;
+    } catch (error) {
+      console.error("Error creating team:", error);
+      dispatch({ type: "SET_ERROR", payload: "Error creating team" });
+      throw error;
+    }
   };
 
   const addMemberToTeam = async (teamId: string, superhero: Superhero) => {
-    dispatch({ type: "ADD_MEMBER_TO_TEAM", payload: { teamId, superhero } });
+    try {
+      const authResult = await biometricService.authenticate();
+      if (!authResult.success) {
+        throw new Error(authResult.error?.message || "Authentication failed");
+      }
+
+      await databaseService.addMemberToTeam(teamId, superhero.id);
+      dispatch({ type: "ADD_MEMBER_TO_TEAM", payload: { teamId, superhero } });
+
+      const teams = await databaseService.getAllTeams();
+      dispatch({ type: "SET_TEAMS", payload: teams });
+    } catch (error) {
+      console.error("Error adding member to team:", error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Error adding member to team",
+      });
+      throw error;
+    }
   };
 
   const removeMemberFromTeam = async (teamId: string, superheroId: number) => {
-    dispatch({
-      type: "REMOVE_MEMBER_FROM_TEAM",
-      payload: { teamId, superheroId },
-    });
+    try {
+      const authResult = await biometricService.authenticate();
+      if (!authResult.success) {
+        throw new Error(authResult.error?.message || "Authentication failed");
+      }
+
+      await databaseService.removeMemberFromTeam(teamId, superheroId);
+      dispatch({
+        type: "REMOVE_MEMBER_FROM_TEAM",
+        payload: { teamId, superheroId },
+      });
+    } catch (error) {
+      console.error("Error removing member from team:", error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Error removing member from team",
+      });
+      throw error;
+    }
   };
 
   const deleteTeam = async (teamId: string) => {
-    dispatch({ type: "DELETE_TEAM", payload: teamId });
-  };
+    try {
+      const authResult = await biometricService.authenticate();
+      if (!authResult.success) {
+        throw new Error(authResult.error?.message || "Authentication failed");
+      }
 
-  const refreshSuperheroes = async () => {
-    await loadSuperheroes();
+      await databaseService.deleteTeam(teamId);
+      dispatch({ type: "DELETE_TEAM", payload: teamId });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      dispatch({ type: "SET_ERROR", payload: "Error deleting team" });
+      throw error;
+    }
   };
 
   const value: AppContextType = {
