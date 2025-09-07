@@ -82,15 +82,22 @@ export const SuperheroesScreen: React.FC<SuperheroesScreenProps> = ({
     }
   };
 
-  const renderSuperhero = ({ item }: { item: Superhero }) => (
-    <SuperheroCard
-      superhero={item}
-      onToggleFavorite={handleToggleFavorite}
-      onPress={() =>
-        navigation.navigate("SuperheroDetail", { superhero: item })
-      }
-    />
-  );
+  const renderSuperhero = ({ item }: { item: Superhero }) => {
+    const updatedSuperhero =
+      superheroes.find((hero) => hero.id === item.id) || item;
+
+    return (
+      <SuperheroCard
+        superhero={updatedSuperhero}
+        onToggleFavorite={handleToggleFavorite}
+        onPress={() =>
+          navigation.navigate("SuperheroDetail", {
+            superhero: updatedSuperhero,
+          })
+        }
+      />
+    );
+  };
 
   if (loading && superheroes.length === 0) {
     return <LoadingSpinner message="Loading superheroes..." />;
