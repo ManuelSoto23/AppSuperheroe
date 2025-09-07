@@ -113,6 +113,39 @@ src/
 - **Ejemplo**: Si tienes 1000 superhéroes, solo muestra 10 en pantalla
 - **Beneficio**: No se traba con listas enormes
 
+## ⚠️ Pendiente: TurboModule
+
+### **Implementación Requerida**
+
+Los requerimientos técnicos, falta implementar un **TurboModule** para la autenticación biométrica nativa.
+
+#### **Estado Actual**
+
+- ✅ **Servicio de autenticación** implementado (`src/services/biometric.ts`)
+- ✅ **Integración** con la UI de equipos
+- ❌ **TurboModule nativo** pendiente de implementación
+
+#### **Nota del Desarrollador**
+
+Aunque no implementé el TurboModule debido a mi falta de experiencia previa con módulos nativos en React Native, estoy muy entusiasmado por aprender sobre esta tecnología. La autenticación biométrica funciona actualmente usando la API de Expo, pero reconozco que el requerimiento específico era desarrollar un TurboModule personalizado para Android/iOS.
+
+## 📚 Compromiso de Aprendizaje
+
+### **Cursos en Progreso**
+
+Para desarrollar esta aplicación, adquirí el curso [**React Native Expo: Aplicaciones nativas para IOS y Android**](https://cursos.devtalles.com/courses/react-native-expo?coupon=learn-01) por Fernando Herrera de DevTalles. Aunque no lo he terminado completamente, he visto bastante contenido que me proporcionó las bases necesarias en React Native y TypeScript. Me comprometo a terminar de ver todo el curso.
+
+### **Compromiso Continuo**
+
+Me comprometo a seguir estudiando y profundizando en el desarrollo móvil nativo. Estoy dispuesto a tomar cursos adicionales como:
+
+- [**iOS 13 App Development Bootcamp**](https://www.udemy.com/course/ios-13-app-development-bootcamp/?couponCode=LETSLEARNNOW) por Dr. Angela Yu
+- Cualquier otro curso que me recomienden para mejorar mis habilidades en TurboModules y desarrollo nativo
+
+### **Actitud de Aprendizaje**
+
+Reconozco que el desarrollo de módulos nativos es un área donde necesito más experiencia, pero estoy completamente comprometido con el aprendizaje continuo y la mejora constante de mis habilidades técnicas.
+
 ## 🚀 Instalación
 
 ```bash
