@@ -10,7 +10,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useApp } from "../context/AppContext";
 import { Superhero } from "../types";
 import { OptimizedImage } from "../components/OptimizedImage";
-import { colors, typography, spacing, commonStyles } from "../theme";
+import { PowerStatItem } from "../components/PowerStatItem";
+import { colors } from "../theme";
 
 interface SuperheroDetailScreenProps {
   route: {
@@ -72,42 +73,6 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
       <Text style={[styles.statValue, { color }]}>{value}</Text>
     </View>
   );
-
-  const PowerStatItem = ({
-    label,
-    value,
-    maxValue = 100,
-  }: {
-    label: string;
-    value: number;
-    maxValue?: number;
-  }) => {
-    const percentage = (value / maxValue) * 100;
-    const getColor = (val: number) => {
-      if (val >= 80) return "#4CAF50";
-      if (val >= 60) return "#FFC107";
-      if (val >= 40) return "#FF9800";
-      return "#F44336";
-    };
-
-    return (
-      <View style={styles.powerStatItem}>
-        <Text style={styles.powerStatLabel}>{label}</Text>
-        <View style={styles.powerStatBar}>
-          <View
-            style={[
-              styles.powerStatFill,
-              {
-                width: `${percentage}%`,
-                backgroundColor: getColor(value),
-              },
-            ]}
-          />
-        </View>
-        <Text style={styles.powerStatValue}>{value}</Text>
-      </View>
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -182,7 +147,7 @@ export const SuperheroDetailScreen: React.FC<SuperheroDetailScreenProps> = ({
 
             <View style={styles.averageScoreContainer}>
               <View style={styles.averageScoreRow}>
-                <Ionicons name="flash" size={20} color="#FFD700" />
+                <Ionicons name="flash" size={20} color={colors.gold} />
                 <Text style={styles.averageScoreLabel}>Avg. Score:</Text>
                 <Text style={styles.averageScoreValue}>
                   {superhero.powerScore?.toFixed(0) || 0} / 100
@@ -274,37 +239,6 @@ const styles = StyleSheet.create({
   },
   powerStatsSection: {
     marginTop: 20,
-  },
-  powerStatItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.2)",
-  },
-  powerStatLabel: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    flex: 1,
-    fontWeight: "600",
-  },
-  powerStatBar: {
-    height: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    borderRadius: 2,
-    flex: 2,
-    marginHorizontal: 12,
-  },
-  powerStatFill: {
-    height: "100%",
-    borderRadius: 2,
-  },
-  powerStatValue: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    textAlign: "right",
-    minWidth: 30,
   },
   averageScoreContainer: {
     marginTop: 20,

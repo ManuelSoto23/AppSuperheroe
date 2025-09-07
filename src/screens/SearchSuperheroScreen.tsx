@@ -12,6 +12,7 @@ import { Superhero } from "../types";
 import { useApp } from "../context/AppContext";
 import { SuperheroCard } from "../components/SuperheroCard";
 import { SearchBar } from "../components/SearchBar";
+import { colors } from "../theme";
 
 interface SearchSuperheroScreenProps {
   route: {
@@ -78,7 +79,7 @@ export const SearchSuperheroScreen: React.FC<SearchSuperheroScreenProps> = ({
         style={styles.addButton}
         onPress={() => handleAddMember(item)}
       >
-        <Ionicons name="add" size={20} color="#FFFFFF" />
+        <Ionicons name="add" size={20} color={colors.text} />
       </TouchableOpacity>
     </View>
   );
@@ -90,7 +91,7 @@ export const SearchSuperheroScreen: React.FC<SearchSuperheroScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.title}>Add Member</Text>
         <View style={styles.placeholder} />
