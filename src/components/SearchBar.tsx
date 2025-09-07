@@ -16,6 +16,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Buscar...",
   onClear,
 }) => {
+  const handleClear = () => {
+    onChangeText("");
+    onClear?.();
+  };
+
   return (
     <View style={styles.container}>
       <Ionicons
@@ -33,8 +38,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         autoCapitalize="none"
         autoCorrect={false}
       />
-      {value.length > 0 && onClear && (
-        <TouchableOpacity onPress={onClear} style={styles.clearButton}>
+      {value.length > 0 && (
+        <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
           <Ionicons
             name="close-circle"
             size={20}
